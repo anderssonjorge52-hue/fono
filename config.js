@@ -6,8 +6,8 @@ window.FALALA_CONFIG = {
   supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyY2Fhb3F5aG1lcXdmcnJkaXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyMTY1OTIsImV4cCI6MjExMDc5MjU5Mn0.AczEpv7CulGX3w4xw1vr-xfws2h5lnOQEmUsV_wmaKg",
 
   // Links de checkout da Wiven (cole aqui quando criar as ofertas)
-  checkoutMonthly: "",
-  checkoutAnnual: "",
+  checkoutMonthly: "https://checkout.wiven.com.br/checkout/cmwqq03aq0kle01psjudxxkbk?offer=BCIMVBF",
+  checkoutAnnual: "https://checkout.wiven.com.br/checkout/cmwqq03aq0kle01psjudxxkbk?offer=RL5YEJL",
   priceMonthly: "R$ 47",
   priceAnnual: "R$ 197",
 
@@ -16,5 +16,5 @@ window.FALALA_CONFIG = {
   appUrl: "https://app.usefalala.online/",
 
   // WhatsApp de suporte, só números com DDI (ex.: 5511999999999)
-  supportWhatsapp: ""
+  supportWhatsapp: "5598988273662"
 };

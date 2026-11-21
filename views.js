@@ -52,7 +52,7 @@
   }
 
   function plansHTML(inModal) {
-    const items = ["Pacientes e sessões ilimitados", "Trilhas de R, S/Z e língua e lábios", "Modo criança com áudio e espelho", "Evolução de cada paciente"];
+    const items = ["Pacientes e sessões ilimitados", "8 trilhas e programas de sessões prontos", "Modo criança com áudio, gravação e espelho", "Tarefa de casa por link para a família", "Evolução e relatório de cada paciente"];
     const btn = (url, label, kind) => url
       ? `<a class="btn ${kind}" href="${esc(checkoutLink(url))}" target="_blank" rel="noopener">${label}</a>`
       : `<button class="btn ${kind}" data-action="no-checkout">${label}</button>`;
