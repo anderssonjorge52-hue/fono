@@ -3,6 +3,14 @@
   const api = window.FALALA_API;
   const app = document.getElementById("root");
   F.ui = F.ui || {};
+  // vindo do pós-compra: abre direto em "Criar conta" (e preenche o e-mail se vier na URL)
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.has("cadastro") || location.hash === "#criar-conta") F.ui.authTab = "up";
+    const em = q.get("email") || q.get("client_email") || "";
+    if (/^\S+@\S+\.\S+$/.test(em)) F.ui.prefillEmail = em.trim().toLowerCase();
+    if (location.hash === "#criar-conta") history.replaceState(null, "", location.pathname + location.search);
+  } catch (e) {}
 
   const ROUTES = ["painel", "pacientes", "sessao", "biblioteca", "historico", "conta"];
   function parse() {
@@ -51,6 +59,7 @@
     const titles = { painel: "Painel", pacientes: "Pacientes", paciente: "Paciente", sessao: "Nova sessão", biblioteca: "Biblioteca", historico: "Histórico", conta: "Conta" };
     document.title = "Falalá · " + (titles[r] || "Painel");
     F.drawEvolution();
+    if (!F.ui.paywallShown && F.planState && F.planState().kind === "expired" && r !== "conta") { F.ui.paywallShown = true; F.paywall(); }
   };
 
   /* ---------- ações por clique ---------- */
@@ -228,7 +237,7 @@
     } catch (ex) {
       err.textContent = ex.message || "Algo deu errado.";
     } finally {
-      if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = form.id === "loginForm" ? "Entrar" : "Criar conta grátis"; }
+      if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = form.id === "loginForm" ? "Entrar" : "Criar conta"; }
     }
   });
 

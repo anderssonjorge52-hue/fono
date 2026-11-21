@@ -26,6 +26,7 @@
   F.activePatients = active;
 
   /* ---------- acesso / plano ---------- */
+  F.planState = () => planState();
   function planState() {
     const st = F.S.status || {};
     const sub = st.subscription;
@@ -36,11 +37,11 @@
       const d = F.daysLeft(st.trial_ends_at);
       return { kind: "trial", title: `Teste grátis: ${d} ${d === 1 ? "dia" : "dias"}`, text: "Tudo liberado durante o teste." };
     }
-    return { kind: "expired", title: "Acesso pausado", text: "Seus dados estão guardados. Assine para continuar." };
+    return { kind: "expired", title: "Assinatura não ativa", text: "Assine um plano para usar o Falalá. Se você já pagou, entre com o mesmo e-mail da compra." };
   }
 
   F.paywall = () => F.modal({
-    title: "Continue usando o Falalá",
+    title: "Libere o Falalá",
     wide: true,
     body: plansHTML(true)
   });
@@ -56,7 +57,7 @@
     const btn = (url, label, kind) => url
       ? `<a class="btn ${kind}" href="${esc(checkoutLink(url))}" target="_blank" rel="noopener">${label}</a>`
       : `<button class="btn ${kind}" data-action="no-checkout">${label}</button>`;
-    return `${inModal ? `<p class="muted" style="margin-bottom:16px">Seus pacientes e sessões continuam guardados. Escolha um plano para voltar a registrar sessões.</p>` : ""}
+    return `${inModal ? `<p class="muted" style="margin-bottom:16px">Escolha um plano para cadastrar pacientes e fazer sessões. Já pagou? Confira se a conta usa o mesmo e-mail da compra (${esc(F.S.user?.email || "")}) ou fale com o suporte.</p>` : ""}
       <div class="grid plans">
         <div class="card plan"><h3>Mensal</h3><div class="price">${esc(CFG.priceMonthly || "R$ 47")}<small> /mês</small></div>
           <ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>${btn(CFG.checkoutMonthly, "Assinar mensal", "")}</div>
@@ -96,7 +97,7 @@
 
   function banner() {
     const ps = planState();
-    if (ps.kind === "expired") return `<div class="banner danger">${icon("lock")}<span>Seu teste grátis terminou. Seus dados estão guardados.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
+    if (ps.kind === "expired") return `<div class="banner danger">${icon("lock")}<span>Sua assinatura não está ativa. Já pagou? Use o mesmo e-mail da compra.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
     if (ps.kind === "trial" && F.daysLeft(F.S.status.trial_ends_at) <= 2) return `<div class="banner">${icon("clock")}<span>${ps.title}. Assine para não perder o ritmo dos seus pacientes.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
     return "";
   }
@@ -410,7 +411,7 @@
         <div><h1>A lição de casa que a criança pede para fazer.</h1>
           <p class="lead">Sessões de fala em formato de jogo, com áudio e espelho. A criança treina em casa pelo link e você acompanha a evolução de cada paciente.</p></div>
         ${F.mascot("happy", "#FFC93C").replace('class="mascot"', 'class="mascot auth-mascot"')}
-        <ul><li>${icon("check")}7 trilhas: R, S/Z, L/LH, CH/J, trocas, sílabas e rimas</li><li>${icon("check")}Tarefa de casa por link, direto no WhatsApp da família</li><li>${icon("check")}Gravação da voz e relatório de evolução para os pais</li></ul>
+        <ul><li>${icon("check")}Programas de sessões prontos e 8 trilhas: R, S/Z, L/LH, CH/J, trocas, sílabas, respiração e boca</li><li>${icon("check")}Tarefa de casa por link, direto no WhatsApp da família</li><li>${icon("check")}Gravação da voz e relatório de evolução para os pais</li></ul>
       </section>
       <section class="auth-form"><div class="auth-card">
         ${demo ? `<div class="notice">${api.fallbackToDemo ? "Não foi possível conectar ao servidor agora. Você está na demonstração; os dados ficam só neste navegador." : "Você está na demonstração. Qualquer e-mail funciona e os dados ficam só neste navegador."}</div>` : ""}
@@ -424,13 +425,14 @@
             <button class="btn ghost sm" type="button" data-action="forgot">Esqueci minha senha</button>
             ${demo ? `<button class="btn" type="button" data-action="demo-login">${icon("play")}Ver a demonstração com pacientes de exemplo</button>` : ""}
           </form>` : `<form class="form" id="signupForm" novalidate>
-            <div><h2>Comece seu teste grátis</h2><p class="muted small" style="margin-top:4px">7 dias com tudo liberado. Sem cartão.</p></div>
+            <div><h2>Crie sua conta</h2><p class="muted small" style="margin-top:4px">Já assinou? Use o <b>mesmo e-mail da compra</b> e o acesso entra liberado.</p></div>
             <div class="field"><label for="sn">Nome completo</label><input class="input" id="sn" autocomplete="name" maxlength="80" required></div>
-            <div class="field"><label for="se">E-mail</label><input class="input" id="se" type="email" autocomplete="email" required></div>
+            <div class="field"><label for="se">E-mail</label><input class="input" id="se" type="email" autocomplete="email" required value="${esc(F.ui.prefillEmail || "")}"></div>
             <div class="row" style="align-items:flex-start"><div class="field grow"><label for="sp">Senha</label><input class="input" id="sp" type="password" autocomplete="new-password" minlength="6" required placeholder="Mínimo 6 caracteres"></div>
             <div class="field" style="width:150px"><label for="sc">CRFa (opcional)</label><input class="input" id="sc" maxlength="20"></div></div>
             <div class="err" id="serr" role="alert"></div>
-            <button class="btn primary big" type="submit">Criar conta grátis</button>
+            <button class="btn primary big" type="submit">Criar conta</button>
+            ${demo ? "" : `<p class="small" style="text-align:center">Ainda não assinou? <a href="https://usefalala.online/#planos">Ver planos</a></p>`}
             <p class="tiny">Ao criar a conta você concorda em usar o Falalá como apoio ao seu atendimento, guardando só o necessário de cada paciente.</p>
           </form>`}
       </div></section>
