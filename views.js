@@ -429,14 +429,14 @@
             <button class="btn ghost sm" type="button" data-action="forgot">Esqueci minha senha</button>
             ${demo ? `<button class="btn" type="button" data-action="demo-login">${icon("play")}Ver a demonstração com pacientes de exemplo</button>` : ""}
           </form>` : `<form class="form" id="signupForm" novalidate>
-            <div><h2>Crie sua conta</h2><p class="muted small" style="margin-top:4px">Já assinou? Use o <b>mesmo e-mail da compra</b> e o acesso entra liberado. Ainda não? Você ganha <b>3 dias grátis</b>, sem cartão.</p></div>
+            <div><h2>Comece seu teste grátis</h2><p class="muted small" style="margin-top:4px"><b>3 dias com tudo liberado, sem cartão.</b> Já assinou? Use o mesmo e-mail da compra e o acesso entra liberado.</p></div>
             <div class="field"><label for="sn">Nome completo</label><input class="input" id="sn" autocomplete="name" maxlength="80" required></div>
             <div class="field"><label for="se">E-mail</label><input class="input" id="se" type="email" autocomplete="email" required value="${esc(F.ui.prefillEmail || "")}"></div>
             <div class="row" style="align-items:flex-start"><div class="field grow"><label for="sp">Senha</label><input class="input" id="sp" type="password" autocomplete="new-password" minlength="6" required placeholder="Mínimo 6 caracteres"></div>
             <div class="field" style="width:150px"><label for="sc">CRFa (opcional)</label><input class="input" id="sc" maxlength="20"></div></div>
             <div class="err" id="serr" role="alert"></div>
-            <button class="btn primary big" type="submit">Criar conta</button>
-            ${demo ? "" : `<p class="small" style="text-align:center">Ainda não assinou? <a href="https://usefalala.online/#planos">Ver planos</a></p>`}
+            <button class="btn primary big" type="submit">Criar conta e testar grátis</button>
+            ${demo ? "" : `<p class="small" style="text-align:center">Quer ver os planos? <a href="https://usefalala.online/#planos">Planos e preços</a></p>`}
             <p class="tiny">Ao criar a conta você concorda em usar o Falalá como apoio ao seu atendimento, guardando só o necessário de cada paciente.</p>
           </form>`}
       </div></section>

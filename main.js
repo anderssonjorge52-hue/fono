@@ -255,7 +255,7 @@
     } catch (ex) {
       err.textContent = ex.message || "Algo deu errado.";
     } finally {
-      if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = form.id === "loginForm" ? "Entrar" : "Criar conta"; }
+      if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = form.id === "loginForm" ? "Entrar" : "Criar conta e testar grátis"; }
     }
   });
 
