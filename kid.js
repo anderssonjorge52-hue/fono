@@ -34,7 +34,7 @@
       token: opts.token, recordAudio: mode === "clinic" ? true : !!opts.recordAudio, onDone: opts.onDone,
       idx: 0, results: [], audio: [], started: Date.now(), reps: 0, holding: false,
       pairTarget: null, pairPicked: null, reveal: false, stream: null, cam: false, mic: null, rec: null, recording: false,
-      done: false, sent: false, pending: false, program: opts.program || null, breath: null
+      done: false, sent: false, pending: false, program: opts.program || null, plan: opts.plan || null, breath: null
     };
     const root = document.createElement("div");
     root.className = `kid t-${opts.track} disp-${K.display}`;
@@ -506,7 +506,8 @@
       };
       if (K.program) { row.program_id = K.program.id; row.program_session = K.program.n; }
       if (sid) row.id = sid;
-      await api.sessions.create(row);
+      const created = await api.sessions.create(row);
+      if (K.plan && F.planMarkDone) await F.planMarkDone(K.plan.id, K.plan.n, (created && created.id) || sid);
       const pid = K.patient.id;
       close();
       await F.reload();

@@ -12,7 +12,7 @@
     if (location.hash === "#criar-conta") history.replaceState(null, "", location.pathname + location.search);
   } catch (e) {}
 
-  const ROUTES = ["painel", "pacientes", "sessao", "biblioteca", "historico", "conta"];
+  const ROUTES = ["painel", "agenda", "pacientes", "sessao", "biblioteca", "historico", "conta"];
   function parse() {
     const h = decodeURIComponent(location.hash.replace(/^#/, ""));
     if (h.startsWith("paciente-")) return { r: "paciente", id: h.slice(9) };
@@ -40,7 +40,7 @@
       app.innerHTML = `<div class="loading"><div class="spin"></div><span>Carregando seu consultório…</span></div>`;
       if (loading) return;
       loading = true;
-      try { await F.reload(); }
+      try { await F.reload(); setTimeout(() => F.notifyCheck && F.notifyCheck(false), 1500); }
       catch (e) { app.innerHTML = `<div class="loading"><p>${F.esc(e.message || "Não foi possível carregar.")}</p><button class="btn" onclick="location.reload()">Tentar de novo</button></div>`; loading = false; return; }
       loading = false;
     }
@@ -56,7 +56,7 @@
     app.innerHTML = F.shell(r, view(id));
     F.ui.lastRoute = r;
     window.scrollTo(0, scrollKeep);
-    const titles = { painel: "Painel", pacientes: "Pacientes", paciente: "Paciente", sessao: "Nova sessão", biblioteca: "Biblioteca", historico: "Histórico", conta: "Conta" };
+    const titles = { painel: "Painel", agenda: "Agenda", pacientes: "Pacientes", paciente: "Paciente", sessao: "Nova sessão", biblioteca: "Biblioteca", historico: "Histórico", conta: "Conta" };
     document.title = "Falalá · " + (titles[r] || "Painel");
     F.drawEvolution();
     if (!F.ui.paywallShown && F.planState && F.planState().kind === "expired" && r !== "conta") { F.ui.paywallShown = true; F.paywall(); }
@@ -125,6 +125,24 @@
         F.homeForm(id, { track: prog.track, ids: ses.home || [] });
         break;
       }
+      case "plan-new": F.planForm(id); break;
+      case "plan-start": F.planStart(id, +el.dataset.n); break;
+      case "plan-move": F.planMove(id, +el.dataset.n); break;
+      case "plan-toggle": { F.ui.planOpen = F.ui.planOpen || {}; const k = id + ":" + el.dataset.n; F.ui.planOpen[k] = !F.ui.planOpen[k]; F.render(); break; }
+      case "plan-missed": run(() => F.planSetStatus(id, +el.dataset.n, "missed"), "Falta registrada."); break;
+      case "plan-reopen": run(() => F.planSetStatus(id, +el.dataset.n, "planned"), "Sessão voltou para agendada."); break;
+      case "plan-home": {
+        const plan = F.S.treatments.find(t => t.id === id);
+        const s = plan && plan.sessions.find(x => x.n === +el.dataset.n);
+        if (s) F.homeForm(plan.patient_id, { track: s.track || "r", ids: s.home || [] });
+        break;
+      }
+      case "plan-ics": F.downloadICS(F.S.treatments.filter(t => t.id === id)); break;
+      case "plan-ics-all": F.downloadICS(F.S.treatments.filter(t => t.active)); break;
+      case "plan-delete":
+        if (await F.confirm("Excluir o plano de tratamento?", "As datas e o roteiro do plano somem. As sessões já feitas continuam no histórico do paciente.", "Excluir plano", "danger")) run(() => api.treatment.remove(id), "Plano excluído.");
+        break;
+      case "notif-on": F.notifyEnable(); break;
       case "new-list": F.listForm(null, id || null); break;
       case "edit-list": F.listForm(F.S.custom.find(c => c.id === id)); break;
       case "delete-list":

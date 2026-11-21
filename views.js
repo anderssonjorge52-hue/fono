@@ -7,14 +7,14 @@
   F.views = F.views || {};
   F.ui = F.ui || {};
 
-  F.S = { user: null, profile: null, status: null, patients: [], sessions: [], custom: [], plans: [], practices: [], loaded: false };
+  F.S = { user: null, profile: null, status: null, patients: [], sessions: [], custom: [], plans: [], practices: [], treatments: [], loaded: false };
 
   F.reload = async () => {
-    const [profile, status, patients, sessions, custom, plans, practices] = await Promise.all([
+    const [profile, status, patients, sessions, custom, plans, practices, treatments] = await Promise.all([
       api.profile(), api.accountStatus(), api.patients.list(), api.sessions.list(),
-      api.custom.list(), api.home.plans(), api.home.practices()
+      api.custom.list(), api.home.plans(), api.home.practices(), api.treatment.list().catch(() => [])
     ]);
-    Object.assign(F.S, { profile, status, patients, sessions, custom, plans, practices, loaded: true });
+    Object.assign(F.S, { profile, status, patients, sessions, custom, plans, practices, treatments, loaded: true });
   };
 
   const active = () => F.S.patients.filter(p => !p.archived);
@@ -69,7 +69,7 @@
 
   /* ---------- estrutura ---------- */
   const NAV = [
-    ["painel", "Painel", "home"], ["pacientes", "Pacientes", "users"], ["sessao", "Nova sessão", "play"],
+    ["painel", "Painel", "home"], ["agenda", "Agenda", "calendar"], ["pacientes", "Pacientes", "users"], ["sessao", "Nova sessão", "play"],
     ["biblioteca", "Biblioteca", "book"], ["historico", "Histórico", "clock"], ["conta", "Conta", "user"]
   ];
   F.shell = (route, inner) => {
@@ -77,21 +77,22 @@
     const name = F.S.profile?.full_name || F.S.user?.email || "";
     const navTo = (r) => r === "paciente" ? "pacientes" : r === "roteiro" ? "biblioteca" : r;
     const cur = navTo(route);
+    const alerts = F.alertCount ? F.alertCount() : 0;
     const demoNote = api.mode === "demo"
       ? `<div class="notice ${api.fallbackToDemo ? "warn" : ""}">${api.fallbackToDemo ? "Não conectou ao servidor. Mostrando a demonstração." : "Demonstração: os dados ficam só neste navegador."}</div>` : "";
     return `<div class="app">
       <aside class="side">
         ${F.logo()}
-        <nav class="nav" aria-label="Principal">${NAV.map(([r, l, i]) => `<a href="#${r}" ${cur === r ? 'aria-current="page"' : ""}>${icon(i)}${l}</a>`).join("")}</nav>
+        <nav class="nav" aria-label="Principal">${NAV.map(([r, l, i]) => `<a href="#${r}" ${cur === r ? 'aria-current="page"' : ""}>${icon(i)}${l}${r === "agenda" && alerts ? `<span class="badge" aria-label="${alerts} para hoje ou atrasadas">${alerts}</span>` : ""}</a>`).join("")}</nav>
         <div class="side-foot">
           ${demoNote}
           <a class="plan-pill" href="#conta" style="text-decoration:none;color:inherit"><b>${ps.title}</b><span class="muted">${ps.text}</span></a>
           <div class="who"><span class="av">${esc((F.firstName(name)[0] || "F").toUpperCase())}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span></div>
         </div>
       </aside>
-      <header class="topbar">${F.logo()}<a class="btn sm primary" href="#sessao">${icon("play")}Sessão</a></header>
+      <header class="topbar">${F.logo()}<div class="row" style="gap:8px"><a class="icon-btn bell" href="#agenda" aria-label="Agenda${alerts ? `: ${alerts} para hoje ou atrasadas` : ""}">${icon("bell")}${alerts ? `<span class="badge">${alerts}</span>` : ""}</a><a class="btn sm primary" href="#sessao">${icon("play")}Sessão</a></div></header>
       <main class="main" id="main">${banner()}${inner}</main>
-      <nav class="bottom-nav" aria-label="Principal">${NAV.filter(n => n[0] !== "historico").map(([r, l, i]) => `<a href="#${r}" ${cur === r ? 'aria-current="page"' : ""}>${icon(i)}${l.replace("Nova sessão", "Sessão")}</a>`).join("")}</nav>
+      <nav class="bottom-nav" aria-label="Principal">${NAV.filter(n => n[0] !== "historico" && n[0] !== "sessao").map(([r, l, i]) => `<a href="#${r}" ${cur === r ? 'aria-current="page"' : ""}>${icon(i)}${l}${r === "agenda" && alerts ? `<span class="badge">${alerts}</span>` : ""}</a>`).join("")}</nav>
     </div>`;
   };
 
@@ -123,6 +124,7 @@
         <a class="step ${didBiblio ? "done" : ""}" href="#biblioteca" style="text-decoration:none;color:inherit"><span class="n">${didBiblio ? icon("check") : 3}</span>Conheça a biblioteca de exercícios</a>
       </div></div>` : "";
     return `<div class="page-head"><div><h1>${hi}${first ? `, ${esc(first)}` : ""}</h1><p class="muted">Aqui está o resumo do seu consultório.</p></div></div>
+      ${F.agendaCardHTML ? `<div class="only-sm" style="margin-bottom:16px">${F.agendaCardHTML()}</div>` : ""}
       <section class="grid kpis" aria-label="Resumo">
         <div class="card kpi"><span class="v">${pts.length}</span><span class="l">pacientes ativos</span></div>
         <div class="card kpi"><span class="v">${sWeek.length}</span><span class="l">sessões nos últimos 7 dias</span></div>
@@ -137,6 +139,7 @@
           </div>
         </div>
         <div class="grid">
+          ${F.agendaCardHTML ? `<div class="hide-sm-block">${F.agendaCardHTML()}</div>` : ""}
           ${onboarding}
           ${recentHome.length ? `<div class="card"><h3 style="margin-bottom:8px">Feito em casa</h3><div class="list">${recentHome.map(h => {
             const pp = patientById(h.patient_id);
@@ -270,7 +273,8 @@
           <div class="row" style="margin-top:16px"><button class="btn sm" data-action="archive-patient" data-id="${p.id}">${icon("archive")}${p.archived ? "Reativar" : "Arquivar"}</button>
           <button class="btn sm danger" data-action="delete-patient" data-id="${p.id}">${icon("trash")}Excluir</button></div></div>
       </div>
-      ${F.programCardHTML(p)}
+      ${F.planCardHTML ? F.planCardHTML(p) : ""}
+      ${F.activePlanOf && F.activePlanOf(p.id) ? "" : F.programCardHTML(p)}
       ${F.homeCardHTML(p)}
       ${attentionHTML(ss.concat(F.S.practices.filter(h => h.patient_id === p.id)))}
       ${F.recordingsHTML(p)}

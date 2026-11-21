@@ -83,6 +83,15 @@
           return (await r.json()).path;
         }
       },
+      treatment: {
+        async list() { return must(await sb.from("treatment_plans").select("*").order("created_at", { ascending: false })); },
+        async create(p) {
+          must(await sb.from("treatment_plans").update({ active: false }).eq("patient_id", p.patient_id).eq("active", true));
+          return must(await sb.from("treatment_plans").insert(cleanTreat(p)).select().single());
+        },
+        async update(id, p) { return must(await sb.from("treatment_plans").update(cleanTreat(p)).eq("id", id).select().single()); },
+        async remove(id) { must(await sb.from("treatment_plans").delete().eq("id", id)); }
+      },
       audio: {
         async upload(path, blob) {
           must(await sb.storage.from("gravacoes").upload(path, blob, { contentType: (blob.type || "audio/webm").split(";")[0], upsert: true }));
@@ -125,6 +134,12 @@
     return out;
   }
 
+  function cleanTreat(p) {
+    const out = {};
+    ["patient_id", "complaints", "total_sessions", "weekdays", "every_weeks", "session_time", "duration_min", "start_date", "sessions", "notes", "active"].forEach(k => { if (p[k] !== undefined) out[k] = p[k]; });
+    return out;
+  }
+
   function clean(p) {
     const out = {};
     ["name", "age", "focus", "notes", "avatar", "archived", "display"].forEach(k => { if (p[k] !== undefined) out[k] = p[k]; });
@@ -153,14 +168,14 @@
 
   /* ---------------- Demonstração ---------------- */
   function demoAdapter() {
-    const KEY = "falala-demo-v4";
+    const KEY = "falala-demo-v5";
     let mem = null;
     const listeners = [];
     const load = () => {
       if (mem) return mem;
       try { mem = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { mem = null; }
-      if (!mem) mem = { session: null, profile: null, patients: [], sessions: [], custom: [], plans: [], practices: [], seeded: false };
-      ["custom", "plans", "practices"].forEach(k => { if (!mem[k]) mem[k] = []; });
+      if (!mem) mem = { session: null, profile: null, patients: [], sessions: [], custom: [], plans: [], practices: [], treatments: [], seeded: false };
+      ["custom", "plans", "practices", "treatments"].forEach(k => { if (!mem[k]) mem[k] = []; });
       return mem;
     };
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) { /* sem armazenamento: segue em memória */ } };
@@ -222,6 +237,21 @@
           });
         });
       });
+      // planos de tratamento de exemplo: Pedro tem sessão hoje, Alice começa em 2 dias
+      try {
+        const FF = window.F;
+        if (FF && FF.buildPlan) {
+          const mkPlan = (p, complaints, startDate, time, doneCount) => {
+            const list = FF.buildPlan({ complaints, total: 10, reevalLast: true });
+            const s = FF.ymd(startDate);
+            const dates = FF.planDates({ start: s, time, weekdays: [startDate.getDay()], every: 1, count: list.length });
+            const done = db.sessions.filter(x => x.patient_id === p.id).sort((a, b) => a.started_at.localeCompare(b.started_at));
+            list.forEach((x, i) => { x.at = dates[i]; if (i < doneCount) { x.status = "done"; x.session_id = done[i] ? done[i].id : null; } });
+            return { id: id(), owner_id: "demo", patient_id: p.id, complaints, total_sessions: list.length, weekdays: [startDate.getDay()], every_weeks: 1, session_time: time, duration_min: 40, start_date: s, sessions: list, active: true, notes: null, created_at: new Date(now - 22 * DAY).toISOString(), updated_at: new Date().toISOString() };
+          };
+          db.treatments = [mkPlan(pedro, ["r"], new Date(now - 21 * DAY), "15:00", 3), mkPlan(alice, ["s", "resp"], new Date(now + 2 * DAY), "10:30", 0)];
+        }
+      } catch (e) { db.treatments = []; }
     }
 
     return {
@@ -259,7 +289,7 @@
         async list() { return wait([...load().patients].sort((a, b) => (a.archived - b.archived) || a.name.localeCompare(b.name, "pt-BR"))); },
         async create(p) { const db = load(); const row = { id: id(), owner_id: "demo", archived: false, focus: [], avatar: "lala", notes: "", display: "upper", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...clean(p) }; db.patients.push(row); save(); return wait(row); },
         async update(pid, p) { const db = load(); const row = db.patients.find(x => x.id === pid); Object.assign(row, clean(p), { updated_at: new Date().toISOString() }); save(); return wait(row); },
-        async remove(pid) { const db = load(); db.patients = db.patients.filter(x => x.id !== pid); db.sessions = db.sessions.filter(s => s.patient_id !== pid); save(); return wait(); }
+        async remove(pid) { const db = load(); db.patients = db.patients.filter(x => x.id !== pid); db.sessions = db.sessions.filter(s => s.patient_id !== pid); db.treatments = db.treatments.filter(t => t.patient_id !== pid); save(); return wait(); }
       },
       sessions: {
         async list() { return wait([...load().sessions].sort((a, b) => b.started_at.localeCompare(a.started_at))); },
@@ -316,6 +346,17 @@
           if (pr && pr.results[n]) { pr.results[n].audio = url; save(); }
           return url;
         }
+      },
+      treatment: {
+        async list() { return wait([...load().treatments].sort((a, b) => b.created_at.localeCompare(a.created_at))); },
+        async create(p) {
+          const db = load();
+          db.treatments.forEach(x => { if (x.patient_id === p.patient_id) x.active = false; });
+          const row = { id: id(), owner_id: "demo", active: true, notes: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...cleanTreat(p) };
+          db.treatments.push(row); save(); return wait(row);
+        },
+        async update(tid, p) { const db = load(); const row = db.treatments.find(x => x.id === tid); Object.assign(row, cleanTreat(p), { updated_at: new Date().toISOString() }); save(); return wait(row); },
+        async remove(tid) { const db = load(); db.treatments = db.treatments.filter(x => x.id !== tid); save(); return wait(); }
       },
       audio: {
         async upload(path, blob) { return URL.createObjectURL(blob); },

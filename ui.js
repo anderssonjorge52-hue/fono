@@ -101,6 +101,9 @@ window.F = window.F || {};
     mic: '<rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/>',
     stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
     send: '<path d="M4 12 20 4l-4 16-4-6.5z"/><path d="m12 13.5 8-9.5"/>',
+    calendar: '<rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+    bell: '<path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 2h-14z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+    download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>',
     lock: '<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
     chart: '<path d="M4 19h16M7 16v-5M12 16V7M17 16v-8"/>',
     whats: '<path d="M4.5 19.5l1.2-3.8A8 8 0 1 1 8.6 18.5z"/><path d="M9 9.5c.4 2.2 2.3 4.1 4.5 4.5l1.2-1.2 1.8.9c-.3 1.2-1.3 1.8-2.5 1.6-3-.5-5.3-2.8-5.8-5.8-.2-1.2.4-2.2 1.6-2.5l.9 1.8z"/>'
