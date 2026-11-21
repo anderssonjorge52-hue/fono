@@ -97,8 +97,8 @@
 
   function banner() {
     const ps = planState();
-    if (ps.kind === "expired") return `<div class="banner danger">${icon("lock")}<span>Sua assinatura não está ativa. Já pagou? Use o mesmo e-mail da compra.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
-    if (ps.kind === "trial" && F.daysLeft(F.S.status.trial_ends_at) <= 2) return `<div class="banner">${icon("clock")}<span>${ps.title}. Assine para não perder o ritmo dos seus pacientes.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
+    if (ps.kind === "expired") return `<div class="banner danger">${icon("lock")}<span>Seu teste grátis terminou e seus dados estão guardados. Já pagou? Use o mesmo e-mail da compra.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
+    if (ps.kind === "trial") return `<div class="banner">${icon("clock")}<span>${ps.title}. Assine para não perder o ritmo dos seus pacientes.</span><button class="btn sm primary" data-action="paywall">Ver planos</button></div>`;
     return "";
   }
 
@@ -425,7 +425,7 @@
             <button class="btn ghost sm" type="button" data-action="forgot">Esqueci minha senha</button>
             ${demo ? `<button class="btn" type="button" data-action="demo-login">${icon("play")}Ver a demonstração com pacientes de exemplo</button>` : ""}
           </form>` : `<form class="form" id="signupForm" novalidate>
-            <div><h2>Crie sua conta</h2><p class="muted small" style="margin-top:4px">Já assinou? Use o <b>mesmo e-mail da compra</b> e o acesso entra liberado.</p></div>
+            <div><h2>Crie sua conta</h2><p class="muted small" style="margin-top:4px">Já assinou? Use o <b>mesmo e-mail da compra</b> e o acesso entra liberado. Ainda não? Você ganha <b>3 dias grátis</b>, sem cartão.</p></div>
             <div class="field"><label for="sn">Nome completo</label><input class="input" id="sn" autocomplete="name" maxlength="80" required></div>
             <div class="field"><label for="se">E-mail</label><input class="input" id="se" type="email" autocomplete="email" required value="${esc(F.ui.prefillEmail || "")}"></div>
             <div class="row" style="align-items:flex-start"><div class="field grow"><label for="sp">Senha</label><input class="input" id="sp" type="password" autocomplete="new-password" minlength="6" required placeholder="Mínimo 6 caracteres"></div>

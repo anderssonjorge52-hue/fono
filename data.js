@@ -232,14 +232,14 @@
         async signUp({ name, email, crfa }) {
           const db = load();
           db.session = { user: { id: "demo", email } };
-          db.profile = { id: "demo", full_name: name, crfa: crfa || null, clinic: null, trial_ends_at: new Date(Date.now() + 7 * DAY).toISOString(), created_at: new Date().toISOString() };
+          db.profile = { id: "demo", full_name: name, crfa: crfa || null, clinic: null, trial_ends_at: new Date(Date.now() + 3 * DAY).toISOString(), created_at: new Date().toISOString() };
           seed(db); save(); emit("SIGNED_IN");
           return wait({ needsConfirmation: false });
         },
         async signIn({ email }) {
           const db = load();
           db.session = { user: { id: "demo", email: email || "demo@falala.app" } };
-          if (!db.profile) db.profile = { id: "demo", full_name: "Dra. Camila Souza", crfa: "2-00000", clinic: "Consultório exemplo", trial_ends_at: new Date(Date.now() + 7 * DAY).toISOString(), created_at: new Date().toISOString() };
+          if (!db.profile) db.profile = { id: "demo", full_name: "Dra. Camila Souza", crfa: "2-00000", clinic: "Consultório exemplo", trial_ends_at: new Date(Date.now() + 3 * DAY).toISOString(), created_at: new Date().toISOString() };
           seed(db); save(); emit("SIGNED_IN");
           return wait();
         },
