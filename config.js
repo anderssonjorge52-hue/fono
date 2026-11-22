@@ -7,9 +7,9 @@ window.FALALA_CONFIG = {
 
   // Links de checkout da Wiven (cole aqui quando criar as ofertas)
   checkoutMonthly: "https://checkout.wiven.com.br/checkout/cmwqq03aq0kle01psjudxxkbk?offer=BCIMVBF",
-  checkoutAnnual: "https://checkout.wiven.com.br/checkout/cmwqq03aq0kle01psjudxxkbk?offer=RL5YEJL",
-  priceMonthly: "R$ 47",
-  priceAnnual: "R$ 197",
+  checkoutLifetime: "https://checkout.wiven.com.br/checkout/cmwrcrjwu0efz01pwpc96sxet?offer=SULQGWM", // oferta vitalícia (pagamento único)
+  priceMonthly: "R$ 29,90",
+  priceLifetime: "R$ 97",
 
   // Endereço público do app (ex.: "https://app.falala.online/"). Usado no link da tarefa de casa.
   // Se ficar vazio, o app usa o endereço em que está aberto.

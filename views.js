@@ -31,7 +31,8 @@
     const st = F.S.status || {};
     const sub = st.subscription;
     if (sub && sub.status === "active" && (!sub.current_period_end || new Date(sub.current_period_end) > new Date())) {
-      return { kind: "active", title: "Assinatura ativa", text: sub.plan ? esc(sub.plan) : "Plano Falalá" };
+      const names = { mensal: "Plano mensal", anual: "Plano anual", vitalicio: "Acesso vitalício" };
+      return { kind: "active", title: sub.plan === "vitalicio" ? "Acesso vitalício" : "Assinatura ativa", text: names[sub.plan] || (sub.plan ? esc(sub.plan) : "Plano Falalá") };
     }
     if (st.has_access && st.trial_ends_at) {
       const d = F.daysLeft(st.trial_ends_at);
@@ -59,10 +60,10 @@
       : `<button class="btn ${kind}" data-action="no-checkout">${label}</button>`;
     return `${inModal ? `<p class="muted" style="margin-bottom:16px">Escolha um plano para cadastrar pacientes e fazer sessões. Já pagou? Confira se a conta usa o mesmo e-mail da compra (${esc(F.S.user?.email || "")}) ou fale com o suporte.</p>` : ""}
       <div class="grid plans">
-        <div class="card plan"><h3>Mensal</h3><div class="price">${esc(CFG.priceMonthly || "R$ 47")}<small> /mês</small></div>
+        <div class="card plan"><h3>Mensal</h3><div class="price">${esc(CFG.priceMonthly || "R$ 29,90")}<small> /mês</small></div>
           <ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>${btn(CFG.checkoutMonthly, "Assinar mensal", "")}</div>
-        <div class="card plan best"><span class="chip r" style="justify-self:start">Mais econômico</span><h3>Anual</h3><div class="price">${esc(CFG.priceAnnual || "R$ 197")}<small> /ano</small></div>
-          <ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>${btn(CFG.checkoutAnnual, "Assinar anual", "primary")}</div>
+        <div class="card plan best"><span class="chip r" style="justify-self:start">Pague uma vez só</span><h3>Vitalício</h3><div class="price">${esc(CFG.priceLifetime || "R$ 97")}<small> único</small></div>
+          <ul>${items.map(i => `<li>${i}</li>`).join("")}<li>Sem mensalidade, para sempre</li></ul>${btn(CFG.checkoutLifetime, "Comprar vitalício", "primary")}</div>
       </div>
       <p class="tiny" style="margin-top:14px">Use na compra o mesmo e-mail da sua conta (${esc(F.S.user?.email || "")}). O acesso é liberado automaticamente após a confirmação do pagamento. 7 dias de garantia.</p>`;
   }

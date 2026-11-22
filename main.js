@@ -248,7 +248,7 @@
         if (password.length < 6) { err.textContent = "A senha precisa ter pelo menos 6 caracteres."; return; }
         btn.disabled = true; btn.textContent = "Criando sua conta…";
         const r = await api.auth.signUp({ name, email, password, crfa });
-        try { if (window.fbq) { fbq("track", "CompleteRegistration", { content_name: "Teste grátis 3 dias", status: true }); fbq("track", "StartTrial", { value: 0, currency: "BRL", predicted_ltv: 197 }); } } catch (e) {}
+        try { if (window.fbq) { fbq("track", "CompleteRegistration", { content_name: "Teste grátis 3 dias", status: true }); fbq("track", "StartTrial", { value: 0, currency: "BRL", predicted_ltv: 97 }); } } catch (e) {}
         if (r.needsConfirmation) {
           form.innerHTML = `<div class="notice ok"><b>Quase lá!</b> Enviamos um link de confirmação para <b>${F.esc(email)}</b>. Abra seu e-mail, confirme e volte para entrar.</div><button class="btn" type="button" data-action="auth-tab" data-id="in">Ir para Entrar</button>`;
         }
@@ -314,6 +314,8 @@
 document.addEventListener("click", e => {
   const a = e.target.closest && e.target.closest('a[href*="checkout.wiven"]');
   if (!a || !window.fbq) return;
-  const anual = /RL5YEJL/.test(a.href);
-  try { fbq("track", "InitiateCheckout", { content_name: anual ? "Falalá anual" : "Falalá mensal", value: anual ? 197 : 47, currency: "BRL" }); } catch (err) {}
+  const CFGx = window.FALALA_CONFIG || {};
+  const offer = (u) => { try { return new URL(u).searchParams.get("offer") || ""; } catch (e) { return ""; } };
+  const vit = !!CFGx.checkoutLifetime && offer(a.href) === offer(CFGx.checkoutLifetime);
+  try { fbq("track", "InitiateCheckout", { content_name: vit ? "Falalá vitalício" : "Falalá mensal", value: vit ? 97 : 29.9, currency: "BRL" }); } catch (err) {}
 });
